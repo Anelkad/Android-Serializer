@@ -15,25 +15,25 @@ sealed interface PolymorphicItem {
     val polymorphicType: String
 
     @Serializable
-    data class CarDTO(
+    data class Car(
         val carName: String,
         val carModel: Int,
         val carColor: String,
+        val imageUrl: String
     ) : PolymorphicItem {
         override val polymorphicType: String
             get() = "CAR"
-        fun asDomainModel() {}
     }
     @Serializable
-    data class PersonDTO(
+    data class Person(
         val personName: String,
         val personAge: Int,
         val personAddress: String,
-        val personGender: String
+        val personGender: String,
+        val imageUrl: String
     ) : PolymorphicItem {
         override val polymorphicType: String
             get() = "PERSON"
-        fun asDomainModel() {}
     }
 
     object Serializer : KSerializer<PolymorphicItem> {
@@ -49,17 +49,17 @@ sealed interface PolymorphicItem {
             get() = PolymorphicSerializer(PolymorphicItem::class).descriptor
         override fun serialize(encoder: Encoder, value: PolymorphicItem) {
             when (value) {
-                is CarDTO -> encoder.encodeSerializableValue(CarDTO.serializer(), value)
-                is PersonDTO -> encoder.encodeSerializableValue(PersonDTO.serializer(), value)
-                else -> {}
+                is Car -> encoder.encodeSerializableValue(Car.serializer(), value)
+                is Person -> encoder.encodeSerializableValue(Person.serializer(), value)
+                else -> throw SerializationException("Unknown itemType: $value")
             }
         }
 
         override fun deserialize(decoder: Decoder): PolymorphicItem {
-            val jsonElement = json.parseToJsonElement(decoder.decodeString())
+            val jsonElement = (decoder as JsonDecoder).decodeJsonElement()
             return when (val itemType = jsonElement.jsonObject["polymorphicType"]?.jsonPrimitive?.content) {
-                "CAR" -> json.decodeFromJsonElement(CarDTO.serializer(), jsonElement)
-                "PARSON" -> json.decodeFromJsonElement(PersonDTO.serializer(), jsonElement)
+                "CAR" -> json.decodeFromJsonElement(Car.serializer(), jsonElement)
+                "PERSON" -> json.decodeFromJsonElement(Person.serializer(), jsonElement)
                 else -> throw SerializationException("Unknown itemType: $itemType")
             }
         }

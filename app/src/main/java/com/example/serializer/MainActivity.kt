@@ -8,9 +8,9 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,12 +29,9 @@ class MainActivity : AppCompatActivity() {
             if (response.isSuccessful) {
                 Log.e("qwerty TAG", response.body()?.data.toString())
                 val list = response.body()?.data
-                val quote = "\""
                 val parsedItem = list?.map {
-                    var json = quote.plus(Gson().toJson(it))
-                    json = json.plus(quote)
                     Log.e("qwerty TAG",
-                        Json.decodeFromString<PolymorphicItem>(json).toString())
+                        Json.decodeFromJsonElement<PolymorphicItem>(it).toString())
                 }
             }
         }

@@ -1,14 +1,16 @@
 package com.example.serializer
 
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 
 object ApiClient {
 
-    const val BASE_URL = "https://my-json-server.typicode.com/"
+    private const val BASE_URL = "https://my-json-server.typicode.com/"
 
     private val okHttpClientClient = OkHttpClient.Builder()
         .addInterceptor(
@@ -21,8 +23,8 @@ object ApiClient {
     private val retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(okHttpClientClient)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build();
+        .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+        .build()
 
     val service = retrofit.create(ApiService::class.java)
 }
