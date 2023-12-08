@@ -4,18 +4,23 @@ import PolymorphicItem
 import android.content.Context
 import android.os.Bundle
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.example.serializer.databinding.ActivityMainBinding
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
+    private var adapter = Adapter()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.rvList.adapter = adapter
     }
 
     override fun onCreateView(
@@ -27,12 +32,10 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val response = ApiClient.service.getOfferList()
             if (response.isSuccessful) {
-                Log.e("qwerty TAG", response.body()?.data.toString())
                 val list = response.body()?.data
-                val parsedItem = list?.map {
-                    Log.e("qwerty TAG",
-                        Json.decodeFromJsonElement<PolymorphicItem>(it).toString())
-                }
+                adapter.submitList(list?.map {
+                    Json.decodeFromJsonElement<PolymorphicItem>(it)
+                })
             }
         }
         return super.onCreateView(parent, name, context, attrs)
